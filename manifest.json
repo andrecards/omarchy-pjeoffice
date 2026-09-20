@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "admin.pjeoffice",
+  "name": "PJe Office Pro",
+  "version": "1.0.0",
+  "author": "Antigravity",
+  "description": "Monitor e controle do PJeOffice Pro e Token Criptográfico",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "PJe Office Pro",
+    "description": "Status do PJeOffice Pro e Token Criptográfico",
+    "category": "Status",
+    "allowMultiple": false
+  }
+}
