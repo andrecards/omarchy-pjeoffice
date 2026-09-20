@@ -28,7 +28,7 @@ BarWidget e monitor em segundo plano do **PJeOffice Pro**, autenticadores de cer
 ### 📋 Pré-requisitos
 
 - **Omarchy Quattro** (com `omarchy-shell` / Quickshell).
-- **PJeOffice Pro** instalado no sistema.
+- **PJeOffice Pro** e drivers de SmartCard instalados (você pode utilizar o instalador completo: [pjeoffice-linux-installer](https://github.com/andrecards12/pjeoffice-linux-installer)).
 - **OpenSC** (`opensc`) para comunicação com tokens criptográficos (`opensc-tool`).
 
 ### 📦 Instalação
@@ -68,7 +68,7 @@ Status bar widget and background manager for **PJeOffice Pro**, cryptographic A3
 ### 📋 Prerequisites
 
 - **Omarchy Quattro** (`omarchy-shell` / Quickshell).
-- **PJeOffice Pro** installed.
+- **PJeOffice Pro** and smart card drivers installed (you can use the universal installer: [pjeoffice-linux-installer](https://github.com/andrecards12/pjeoffice-linux-installer)).
 - **OpenSC** (`opensc`) installed for smart card / token detection.
 
 ### 📦 Installation
