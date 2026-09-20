@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls as QQC
 import Quickshell
 import Quickshell.Io
 import qs.Commons
@@ -7,24 +8,115 @@ import qs.Ui
 
 BarWidget {
   id: root
-  moduleName: "admin.pjeoffice"
+  moduleName: "io.github.andrecards12.pjeoffice"
 
   property bool isOnline: false
   property bool hasToken: false
   property string tokenName: ""
   property bool popupOpen: false
 
-  implicitWidth: button.implicitWidth
-  implicitHeight: button.implicitHeight
+  // Dados dos Tribunais e Estados carregados do PJe Navegador
+  property var estadosList: []
+  property var tribunaisData: ({})
+  property string selectedEstado: "MA"
+  property var estadoOptions: []
+  property string selectedTribunalUrl: ""
+  property string tribunalSearchText: ""
+
+  // Lista reativa e filtrada de tribunais do estado selecionado
+  readonly property var filteredTribunais: {
+    var uf = root.selectedEstado || "MA"
+    var list = root.tribunaisData && root.tribunaisData[uf] ? root.tribunaisData[uf] : []
+    var q = root.tribunalSearchText.toLowerCase().trim()
+    if (!q) return list
+    var out = []
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i]
+      var apelido = String(item.Apelido || "").toLowerCase()
+      var nome = String(item.Nome || "").toLowerCase()
+      if (apelido.indexOf(q) !== -1 || nome.indexOf(q) !== -1) {
+        out.push(item)
+      }
+    }
+    return out
+  }
+
+  visible: root.isOnline
+  implicitWidth: root.isOnline ? button.implicitWidth : 0
+  implicitHeight: root.isOnline ? button.implicitHeight : 0
 
   function close() {
     popupOpen = false
   }
 
   IpcHandler {
-    target: "admin.pjeoffice"
+    target: "io.github.andrecards12.pjeoffice"
     function toggle(): void {
       root.popupOpen = !root.popupOpen
+    }
+  }
+
+  // Carregamento dos dados JSON sincronizados com pje.jus.br/navegador
+  FileView {
+    id: estadosFile
+    path: {
+      var home = Quickshell.env("HOME") || ""
+      return home + "/.config/omarchy/plugins/" + root.moduleName + "/data/estados.json"
+    }
+    watchChanges: false
+    printErrors: false
+    onLoaded: {
+      try {
+        var raw = JSON.parse(text())
+        if (Array.isArray(raw)) {
+          root.estadosList = raw
+          var opts = []
+          for (var i = 0; i < raw.length; i++) {
+            opts.push({
+              value: String(raw[i].Sigla),
+              label: String(raw[i].Sigla + " - " + raw[i].Nome)
+            })
+          }
+          root.estadoOptions = opts
+        }
+      } catch (e) {
+        console.error("Erro ao carregar estados.json:", e)
+      }
+    }
+  }
+
+  FileView {
+    id: tribunaisFile
+    path: {
+      var home = Quickshell.env("HOME") || ""
+      return home + "/.config/omarchy/plugins/" + root.moduleName + "/data/tribunais.json"
+    }
+    watchChanges: false
+    printErrors: false
+    onLoaded: {
+      try {
+        var raw = JSON.parse(text())
+        root.tribunaisData = raw
+      } catch (e) {
+        console.error("Erro ao carregar tribunais.json:", e)
+      }
+    }
+  }
+
+  onFilteredTribunaisChanged: {
+    if (filteredTribunais.length > 0) {
+      var found = false
+      for (var i = 0; i < filteredTribunais.length; i++) {
+        if (filteredTribunais[i].Link === selectedTribunalUrl) {
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        selectedTribunalUrl = filteredTribunais[0].Link || ""
+      }
+    } else {
+      selectedTribunalUrl = ""
     }
   }
 
@@ -74,13 +166,21 @@ BarWidget {
 
   function launchPje() {
     if (root.bar) {
-      root.bar.run("/home/admin/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh")
+      root.bar.run("which pjeoffice-pro >/dev/null 2>&1 && pjeoffice-pro || [ -f \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\" ] && \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\"")
     }
+  }
+
+  function quitPje() {
+    if (root.bar) {
+      root.bar.run("pkill -9 -f 'pjeoffice-pro.jar'")
+    }
+    root.isOnline = false
+    root.popupOpen = false
   }
 
   function restartPje() {
     if (root.bar) {
-      root.bar.run("pkill -f 'pjeoffice-pro.jar' 2>/dev/null; sleep 1; /home/admin/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh")
+      root.bar.run("pkill -f 'pjeoffice-pro.jar' 2>/dev/null; sleep 1; (which pjeoffice-pro >/dev/null 2>&1 && pjeoffice-pro || [ -f \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\" ] && \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\")")
     }
   }
 
@@ -90,15 +190,10 @@ BarWidget {
     }
   }
 
-  function openTJMA() {
-    if (root.bar) {
-      root.bar.run("omarchy-launch-browser 'https://pje.tjma.jus.br/' || xdg-open 'https://pje.tjma.jus.br/'")
-    }
-  }
-
-  function openTRF1() {
-    if (root.bar) {
-      root.bar.run("omarchy-launch-browser 'https://pje1g.trf1.jus.br/' || xdg-open 'https://pje1g.trf1.jus.br/'")
+  function openTribunalUrl(targetUrl) {
+    var url = targetUrl || root.selectedTribunalUrl
+    if (url && root.bar) {
+      root.bar.run("omarchy-launch-browser '" + url + "' || xdg-open '" + url + "'")
     }
   }
 
@@ -149,7 +244,7 @@ BarWidget {
     bar: root.bar
     owner: root
     open: root.popupOpen
-    contentWidth: popup.fittedContentWidth(Style.space(260))
+    contentWidth: popup.fittedContentWidth(Style.space(340))
     contentHeight: popup.fittedContentHeight(cardCol.implicitHeight)
 
     Column {
@@ -157,34 +252,45 @@ BarWidget {
       anchors.fill: parent
       spacing: Style.space(8)
 
+      // Header com título e status de conexão
       Column {
         width: parent.width
         spacing: Style.space(2)
 
-        Text {
-          textFormat: Text.PlainText
-          text: "PJE"
-          color: root.bar ? root.bar.foreground : Color.foreground
-          font.family: root.bar ? root.bar.fontFamily : Style.font.family
-          font.pixelSize: Style.font.title
-          font.bold: true
+        RowLayout {
+          width: parent.width
+          Text {
+            Layout.fillWidth: true
+            textFormat: Text.PlainText
+            text: "PJe Office Pro"
+            color: root.bar ? root.bar.foreground : Color.foreground
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.title
+            font.bold: true
+          }
+
+          Text {
+            textFormat: Text.PlainText
+            text: root.isOnline ? "● ONLINE" : "● OFFLINE"
+            color: root.isOnline ? "#2ecc71" : "#e74c3c"
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.caption
+            font.bold: true
+          }
         }
 
         Text {
           textFormat: Text.PlainText
-          text: root.isOnline ? (root.hasToken ? "ONLINE • TOKEN PRONTO" : "ONLINE • SEM TOKEN") : "DESCONECTADO"
+          text: root.isOnline ? (root.hasToken ? "AUTENTICADOR ATIVO COM TOKEN" : "AUTENTICADOR ATIVO SEM TOKEN") : "AUTENTICADOR DESCONECTADO"
           color: root.isOnline ? (root.hasToken ? "#2ecc71" : "#f39c12") : "#e74c3c"
           font.family: root.bar ? root.bar.fontFamily : Style.font.family
           font.pixelSize: Style.font.caption
           font.bold: true
-          font.letterSpacing: 1.2
+          font.letterSpacing: 1.0
         }
       }
 
-      PanelSeparator {
-        width: parent.width
-      }
-
+      // Detalhes do Token Físico Criptográfico
       RowLayout {
         width: parent.width
         spacing: Style.space(6)
@@ -210,50 +316,196 @@ BarWidget {
         width: parent.width
       }
 
-      Button {
+      // Seção de Seleção e Filtro Nacional do PJe (estilo PJe Navegador)
+      Column {
         width: parent.width
-        text: "Abrir TJMA PJe"
-        bordered: true
-        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-        onClicked: {
-          root.popupOpen = false
-          root.openTJMA()
+        spacing: Style.space(6)
+
+        PanelSectionHeader {
+          width: parent.width
+          text: "SELEÇÃO DE TRIBUNAL (PJe BRASIL)"
+          foreground: root.bar ? root.bar.foreground : Color.foreground
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+        }
+
+        // Seletor de Estado (UF)
+        Dropdown {
+          id: estadoDropdown
+          width: parent.width
+          label: "Estado / UF"
+          options: root.estadoOptions
+          value: root.selectedEstado
+          foreground: root.bar ? root.bar.foreground : Color.foreground
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          onChanged: function(newVal) {
+            root.selectedEstado = newVal
+            root.tribunalSearchText = ""
+          }
+        }
+
+        // Campo de busca em tempo real para os tribunais daquele estado
+        TextField {
+          id: searchField
+          width: parent.width
+          placeholderText: "Buscar tribunal..."
+          text: root.tribunalSearchText
+          foreground: root.bar ? root.bar.foreground : Color.foreground
+          accent: Color.accent
+          onTextChanged: {
+            root.tribunalSearchText = text
+          }
+        }
+
+        // Lista rolável e integrada de Tribunais com rolagem dinâmica e scrollbar nativa
+        BorderSurface {
+          width: parent.width
+          height: Style.space(130)
+          radius: Style.cornerRadius
+          color: Color.background
+          borderSpec: Border.controlSpec("normal", root.bar ? root.bar.foreground : Color.foreground, Color.accent)
+
+          ListView {
+            id: tribunalList
+            anchors.fill: parent
+            anchors.margins: Style.space(2)
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            spacing: Style.space(2)
+            model: root.filteredTribunais
+
+            QQC.ScrollBar.vertical: QQC.ScrollBar {
+              policy: QQC.ScrollBar.AsNeeded
+              width: Style.space(6)
+            }
+
+            Text {
+              anchors.centerIn: parent
+              visible: root.filteredTribunais.length === 0
+              text: "Nenhum tribunal encontrado"
+              color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.6)
+              font.family: root.bar ? root.bar.fontFamily : Style.font.family
+              font.pixelSize: Style.font.bodySmall
+            }
+
+            delegate: CursorSurface {
+              id: itemRoot
+              required property var modelData
+              required property int index
+
+              width: tribunalList.width - (tribunalList.contentHeight > tribunalList.height ? Style.space(8) : 0)
+              implicitHeight: itemCol.implicitHeight + Style.space(8)
+              hasCursor: itemMouse.containsMouse
+              current: modelData.Link === root.selectedTribunalUrl
+
+              MouseArea {
+                id: itemMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                  root.selectedTribunalUrl = itemRoot.modelData.Link || ""
+                }
+                onDoubleClicked: {
+                  root.selectedTribunalUrl = itemRoot.modelData.Link || ""
+                  root.popupOpen = false
+                  root.openTribunalUrl(root.selectedTribunalUrl)
+                }
+              }
+
+              Column {
+                id: itemCol
+                anchors.left: parent.left
+                anchors.right: selectIndicator.left
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: Style.space(8)
+                anchors.rightMargin: Style.space(4)
+                spacing: Style.space(1)
+
+                Text {
+                  width: parent.width
+                  textFormat: Text.PlainText
+                  text: String(itemRoot.modelData.Apelido || itemRoot.modelData.Nome || "Tribunal")
+                  font.family: root.bar ? root.bar.fontFamily : Style.font.family
+                  font.pixelSize: Style.font.bodySmall
+                  font.bold: itemRoot.current
+                  color: itemRoot.current 
+                    ? Style.hoverStateColor(root.bar ? root.bar.foreground : Color.foreground, Color.accent) 
+                    : (root.bar ? root.bar.foreground : Color.foreground)
+                  elide: Text.ElideRight
+                }
+
+                Text {
+                  width: parent.width
+                  textFormat: Text.PlainText
+                  visible: text !== "" && text !== itemRoot.modelData.Apelido
+                  text: String(itemRoot.modelData.Nome || "")
+                  font.family: root.bar ? root.bar.fontFamily : Style.font.family
+                  font.pixelSize: Style.font.caption
+                  color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.5)
+                  elide: Text.ElideRight
+                }
+              }
+
+              Text {
+                id: selectIndicator
+                anchors.right: parent.right
+                anchors.rightMargin: Style.space(8)
+                anchors.verticalCenter: parent.verticalCenter
+                text: "󰄬"
+                visible: itemRoot.current
+                font.family: root.bar ? root.bar.fontFamily : Style.font.family
+                font.pixelSize: Style.font.bodySmall
+                color: Color.accent
+              }
+            }
+          }
+        }
+
+        // Botão para Abrir Tribunal Selecionado
+        Button {
+          width: parent.width
+          text: "Ir ao Site do PJe"
+          iconText: "󰌹"
+          bordered: true
+          accent: Color.accent
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          enabled: root.selectedTribunalUrl !== ""
+          onClicked: {
+            root.popupOpen = false
+            root.openTribunalUrl(root.selectedTribunalUrl)
+          }
         }
       }
 
-      Button {
+      PanelSeparator {
         width: parent.width
-        text: "Abrir TRF1 PJe"
-        bordered: true
-        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-        onClicked: {
-          root.popupOpen = false
-          root.openTRF1()
-        }
       }
 
-      Button {
+      // Ações do Sistema e PJeOffice
+      RowLayout {
         width: parent.width
-        text: "Gerenciador TokenAdmin"
-        bordered: true
-        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-        onClicked: {
-          root.popupOpen = false
-          root.openTokenAdmin()
-        }
-      }
+        spacing: Style.space(6)
 
-      Button {
-        width: parent.width
-        text: root.isOnline ? "Reiniciar PJeOffice" : "Iniciar PJeOffice"
-        bordered: true
-        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-        onClicked: {
-          root.popupOpen = false
-          if (root.isOnline) {
-            root.restartPje()
-          } else {
-            root.launchPje()
+        Button {
+          Layout.fillWidth: true
+          text: "TokenAdmin"
+          iconText: "󱐋"
+          bordered: true
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          onClicked: {
+            root.popupOpen = false
+            root.openTokenAdmin()
+          }
+        }
+
+        Button {
+          Layout.fillWidth: true
+          text: "Sair"
+          iconText: "󰗼"
+          bordered: true
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          onClicked: {
+            root.quitPje()
           }
         }
       }
