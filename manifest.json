@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "admin.pjeoffice",
+  "id": "io.github.andrecards12.pjeoffice",
   "name": "PJe Office Pro",
   "version": "1.0.0",
-  "author": "Antigravity",
-  "description": "Monitor e controle do PJeOffice Pro e Token Criptográfico",
+  "author": "Andre Cardoso",
+  "description": "Monitor e controle do PJeOffice Pro, Token Criptográfico e Tribunais do PJe para Omarchy.",
   "kinds": [
     "bar-widget"
   ],
@@ -13,7 +13,7 @@
   },
   "barWidget": {
     "displayName": "PJe Office Pro",
-    "description": "Status do PJeOffice Pro e Token Criptográfico",
+    "description": "Status do PJeOffice Pro, Token Criptográfico e acesso aos tribunais do PJe",
     "category": "Status",
     "allowMultiple": false
   }

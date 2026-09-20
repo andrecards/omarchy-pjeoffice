@@ -1,44 +1,67 @@
-# Omarchy PJeOffice Pro Widget
+# Omarchy PJeOffice Pro & Token Monitor
 
-Plugin e widget de barra para o ambiente [Omarchy](https://omarchy.org), desenvolvido para monitoramento em tempo real do status do **PJeOffice Pro** e detecção de tokens criptográficos A3 (StarSign, SafeSign, etc.) utilizados por advogados e operadores do direito.
+[![Omarchy Plugin](https://img.shields.io/badge/Omarchy-Quattro%20Plugin-blue?style=flat-square)](https://plugins.omarchy.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
----
+BarWidget e monitor em segundo plano do **PJeOffice Pro**, autenticadores de certificados digitais A3 (SafeSign, StarSign CUT, etc.) e acesso rápido unificado aos tribunais brasileiros com suporte a PJe para o ambiente [Omarchy](https://omarchy.org).
 
-## 🎯 Funcionalidades
-
-- **Status do PJeOffice Pro:** Verifica se o serviço local do PJeOffice Pro está ativo e respondendo na porta local (`http://127.0.0.1:8800/`).
-- **Detecção de Token A3:** Monitora via `opensc-tool` se o token criptográfico USB está inserido e reconhecido pelo sistema.
-- **Painel Interativo:** Clique no widget para abrir um painel com detalhes de conexão, nome do token e atalhos rápidos.
-- **Integração com o System Tray / OMAT:** Pode ser utilizado solto na barra ou aninhado dentro da gaveta retrátil de segundo plano do Omarchy Tray (`io.github.tyrichards.tray`).
+Projetado para operar tanto diretamente na barra principal do Omarchy quanto de forma integrada e retrátil dentro da gaveta do **Tray** (`io.github.tyrichards.tray`), atrás do chevron `<`.
 
 ---
 
-## 📦 Estrutura do Plugin
+## Recursos
 
-```text
-omarchy-pjeoffice/
-├── manifest.json   # Metadados e contrato do widget para o Quickshell
-├── Widget.qml      # Interface gráfica (BarWidget) e lógica de monitoramento
-├── README.md       # Documentação do projeto
-└── LICENSE         # Licença de uso
+- **Monitoramento em Segundo Plano:** Detecta automaticamente se o serviço local do PJeOffice Pro (`http://127.0.0.1:8800/`) está online.
+- **Detecção de Token Criptográfico A3:** Monitora via `opensc-tool` a inserção e presença de cartões inteligentes e tokens USB (ex: StarSign CUT S).
+- **Acesso Rápido a Tribunais (PJe Brasil):** Filtro e pesquisa em tempo real por Estado (UF) e nome/apelido de dezenas de tribunais (TJ, TRF, TRT, etc.) sincronizados com a base nacional do PJe.
+- **Controle do Ciclo de Vida:** Botões integrados para abrir o **TokenAdmin** ou **Sair** (encerrar o processo do autenticador de forma segura).
+- **Ocultação Inteligente:** Quando o serviço está offline, o widget se retrai e desocupa espaço na barra ou gaveta.
+
+---
+
+## Pré-requisitos
+
+- **Omarchy Quattro** (com `omarchy-shell` / Quickshell).
+- **PJeOffice Pro** instalado no sistema.
+- **OpenSC** (`opensc`) para leitura de tokens criptográficos via linha de comando (`opensc-tool`).
+
+---
+
+## Instalação
+
+### Via Omarchy CLI (Recomendado)
+```bash
+omarchy plugin add https://github.com/andrecards12/omarchy-pjeoffice.git --enable
+```
+
+### Hospedagem na Gaveta Tray (Segundo Plano)
+Para colocar o PJeOffice operando atrás da setinha `<` do Tray, adicione o identificador do plugin à lista `widgets` do `io.github.tyrichards.tray` em `~/.config/omarchy/shell.json`:
+
+```json
+{
+  "id": "io.github.tyrichards.tray",
+  "showTrayIcons": true,
+  "widgets": [
+    {
+      "entry": {
+        "id": "io.github.andrecards12.pjeoffice"
+      }
+    }
+  ]
+}
 ```
 
 ---
 
-## 🚀 Instalação Manual
+## Remoção
 
-1. Copie ou clone este repositório para a pasta de plugins do usuário:
-   ```bash
-   cp -r omarchy-pjeoffice ~/.config/omarchy/plugins/admin.pjeoffice
-   ```
-2. Adicione ou posicione o widget na barra via comando do Omarchy:
-   ```bash
-   omarchy bar put admin.pjeoffice --section right
-   ```
-3. O shell recarregará automaticamente com as novas configurações.
+Para desinstalar e desativar o plugin do seu sistema:
+```bash
+omarchy plugin remove io.github.andrecards12.pjeoffice --yes
+```
 
 ---
 
-## ⚖️ Licença
+## Licença
 
-Distribuído sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+Distribuído sob a licença [MIT](LICENSE).
