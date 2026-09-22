@@ -5,6 +5,23 @@
   "version": "1.0.1",
   "author": "Andre Cardoso",
   "description": "Monitor e controle do PJeOffice Pro, Token Criptográfico e Tribunais do PJe para Omarchy.",
+  "repository": "https://github.com/andrecards/omarchy-pjeoffice",
+  "homepage": "https://github.com/andrecards/omarchy-pjeoffice",
+  "license": "MIT",
+  "tags": [
+    "pje",
+    "pjeoffice",
+    "token",
+    "certificado-digital",
+    "tribunais",
+    "juridico",
+    "status",
+    "monitor"
+  ],
+  "dependencies": [
+    "opensc",
+    "curl"
+  ],
   "kinds": [
     "bar-widget"
   ],
