@@ -28,23 +28,23 @@ BarWidget e monitor em segundo plano do **PJeOffice Pro**, autenticadores de cer
 ### 📋 Pré-requisitos
 
 - **Omarchy Quattro** (com `omarchy-shell` / Quickshell).
-- **PJeOffice Pro** e drivers de SmartCard instalados (você pode utilizar o instalador completo: [pjeoffice-linux-installer](https://github.com/andrecards12/pjeoffice-linux-installer)).
+- **PJeOffice Pro** e drivers de SmartCard instalados (você pode utilizar o instalador completo: [pjeoffice-linux-installer](https://github.com/andrecards/pjeoffice-linux-installer)).
 - **OpenSC** (`opensc`) para comunicação com tokens criptográficos (`opensc-tool`).
 
 ### 📦 Instalação
 
 ```bash
-omarchy plugin add https://github.com/andrecards12/omarchy-pjeoffice.git --enable
+omarchy plugin add https://github.com/andrecards/omarchy-pjeoffice.git --enable
 ```
 
 > **Hospedagem no Tray (Gaveta do Segundo Plano):**
 > Você pode usá-lo na barra principal ou simplesmente arrastá-lo (drag & drop) para dentro da gaveta retrátil do **Tray** (`io.github.tyrichards.tray`), atrás da setinha `<`.
-> Ou se preferir via arquivo, adicione `"id": "io.github.andrecards12.pjeoffice"` dentro do array `widgets` do tray em `~/.config/omarchy/shell.json`.
+> Ou se preferir via arquivo, adicione `"id": "io.github.andrecards.pjeoffice"` dentro do array `widgets` do tray em `~/.config/omarchy/shell.json`.
 
 ### 🗑️ Remoção
 
 ```bash
-omarchy plugin remove io.github.andrecards12.pjeoffice --yes
+omarchy plugin remove io.github.andrecards.pjeoffice --yes
 ```
 
 ---
@@ -68,23 +68,23 @@ Status bar widget and background manager for **PJeOffice Pro**, cryptographic A3
 ### 📋 Prerequisites
 
 - **Omarchy Quattro** (`omarchy-shell` / Quickshell).
-- **PJeOffice Pro** and smart card drivers installed (you can use the universal installer: [pjeoffice-linux-installer](https://github.com/andrecards12/pjeoffice-linux-installer)).
+- **PJeOffice Pro** and smart card drivers installed (you can use the universal installer: [pjeoffice-linux-installer](https://github.com/andrecards/pjeoffice-linux-installer)).
 - **OpenSC** (`opensc`) installed for smart card / token detection.
 
 ### 📦 Installation
 
 ```bash
-omarchy plugin add https://github.com/andrecards12/omarchy-pjeoffice.git --enable
+omarchy plugin add https://github.com/andrecards/omarchy-pjeoffice.git --enable
 ```
 
 > **Tray Drawer Hosting (Background Drawer):**
 > You can place it on the main bar or drag and drop it into the collapsible **Tray** drawer (`io.github.tyrichards.tray`) behind the chevron `<`.
-> Alternatively, add `"id": "io.github.andrecards12.pjeoffice"` to the `widgets` list of the tray in `~/.config/omarchy/shell.json`.
+> Alternatively, add `"id": "io.github.andrecards.pjeoffice"` to the `widgets` list of the tray in `~/.config/omarchy/shell.json`.
 
 ### 🗑️ Uninstallation
 
 ```bash
-omarchy plugin remove io.github.andrecards12.pjeoffice --yes
+omarchy plugin remove io.github.andrecards.pjeoffice --yes
 ```
 
 ---

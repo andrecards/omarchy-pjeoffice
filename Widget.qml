@@ -8,7 +8,7 @@ import qs.Ui
 
 BarWidget {
   id: root
-  moduleName: "io.github.andrecards12.pjeoffice"
+  moduleName: "io.github.andrecards.pjeoffice"
 
   property bool isOnline: false
   property bool hasToken: false
@@ -50,7 +50,7 @@ BarWidget {
   }
 
   IpcHandler {
-    target: "io.github.andrecards12.pjeoffice"
+    target: "io.github.andrecards.pjeoffice"
     function toggle(): void {
       root.popupOpen = !root.popupOpen
     }
