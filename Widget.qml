@@ -116,7 +116,7 @@ BarWidget {
 
   Process {
     id: statusProc
-    command: ["curl", "-s", "-k", "--max-time", "1", "http://127.0.0.1:8800/"]
+    command: ["curl", "-s", "-k", "--max-time", "1", "--output", "/dev/null", "http://127.0.0.1:8800/"]
     stdout: StdioCollector { waitForEnd: true }
     stderr: StdioCollector { waitForEnd: true }
     onExited: function(exitCode, exitStatus) {
