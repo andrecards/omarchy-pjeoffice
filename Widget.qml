@@ -116,22 +116,26 @@ BarWidget {
 
   Process {
     id: statusProc
-    command: ["bash", "-c", "curl -s -k --max-time 1 http://127.0.0.1:8800/ >/dev/null 2>&1 && echo 'ONLINE' || echo 'OFFLINE'"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: {
-        root.isOnline = text.trim() === "ONLINE"
-      }
+    command: ["curl", "-s", "-k", "--max-time", "1", "http://127.0.0.1:8800/"]
+    stdout: StdioCollector { waitForEnd: true }
+    stderr: StdioCollector { waitForEnd: true }
+    onExited: function(exitCode, exitStatus) {
+      root.isOnline = exitCode === 0
     }
   }
 
   Process {
     id: tokenProc
-    command: ["bash", "-c", "opensc-tool -l 2>/dev/null | grep -i 'yes' | head -n 1"]
+    command: ["opensc-tool", "-l"]
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
-        var t = text.trim()
+        var lines = text.split("\n")
+        var found = ""
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i].toLowerCase().indexOf("yes") !== -1) { found = lines[i]; break }
+        }
+        var t = found.trim()
         if (t.length > 0) {
           root.hasToken = true
           if (t.indexOf("StarSign") !== -1) {
@@ -145,6 +149,7 @@ BarWidget {
         }
       }
     }
+    stderr: StdioCollector { waitForEnd: true }
   }
 
   Timer {
