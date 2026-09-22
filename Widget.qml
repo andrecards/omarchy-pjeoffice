@@ -114,11 +114,13 @@ BarWidget {
     }
   }
 
+  // Verifica se o PJeOffice Pro está ativo na porta 8800.
+  // curl descarta o corpo da resposta HTTP no próprio producer (--output /dev/null),
+  // eliminando qualquer risco de acumulação de memória por resposta grande.
+  // Somente o código de saída é usado para determinar o estado online.
   Process {
     id: statusProc
     command: ["curl", "-s", "-k", "--max-time", "1", "--output", "/dev/null", "http://127.0.0.1:8800/"]
-    stdout: StdioCollector { waitForEnd: true }
-    stderr: StdioCollector { waitForEnd: true }
     onExited: function(exitCode, exitStatus) {
       root.isOnline = exitCode === 0
     }
@@ -152,9 +154,11 @@ BarWidget {
     stderr: StdioCollector { waitForEnd: true }
   }
 
+  // Timer sempre ativo para detectar o estado tanto na inicialização
+  // quanto durante o uso. Polling de 3 s garante responsividade sem overhead.
   Timer {
     interval: 3000
-    running: root.isOnline || root.hasToken
+    running: true
     repeat: true
     triggeredOnStart: true
     onTriggered: {
