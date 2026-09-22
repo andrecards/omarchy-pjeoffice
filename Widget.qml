@@ -59,10 +59,7 @@ BarWidget {
   // Carregamento dos dados JSON sincronizados com pje.jus.br/navegador
   FileView {
     id: estadosFile
-    path: {
-      var home = Quickshell.env("HOME") || ""
-      return home + "/.config/omarchy/plugins/" + root.moduleName + "/data/estados.json"
-    }
+    path: Quickshell.pluginPath(root.moduleName) + "/data/estados.json"
     watchChanges: false
     printErrors: false
     onLoaded: {
@@ -87,10 +84,7 @@ BarWidget {
 
   FileView {
     id: tribunaisFile
-    path: {
-      var home = Quickshell.env("HOME") || ""
-      return home + "/.config/omarchy/plugins/" + root.moduleName + "/data/tribunais.json"
-    }
+    path: Quickshell.pluginPath(root.moduleName) + "/data/tribunais.json"
     watchChanges: false
     printErrors: false
     onLoaded: {
@@ -155,7 +149,7 @@ BarWidget {
 
   Timer {
     interval: 3000
-    running: true
+    running: root.isOnline || root.hasToken
     repeat: true
     triggeredOnStart: true
     onTriggered: {
