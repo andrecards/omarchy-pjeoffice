@@ -222,10 +222,14 @@ BarWidget {
   readonly property color urgent: bar ? bar.urgent : Color.urgent
   readonly property color barIconColor: root.isOnline ? barForeground : Qt.darker(barForeground, 1.55)
 
-  BarIconButton {
+  WidgetButton {
     id: button
     anchors.fill: parent
     bar: root.bar
+    text: "PJe"
+    labelVisible: false
+    horizontalMargin: 3
+    fixedWidth: pjeIcon.implicitWidth + Style.spaceReal(button.horizontalMargin * 2)
     tooltipText: root.isOnline 
       ? ("PJeOffice Pro: Online" + (root.hasToken ? " (" + root.tokenName + ")" : " (Sem Token)"))
       : "PJeOffice Pro: Parado"
@@ -234,19 +238,23 @@ BarWidget {
       root.popupOpen = !root.popupOpen
     }
 
-    iconComponent: Component {
-      Item {
-        anchors.fill: parent
+    PjeIcon {
+      id: pjeIcon
+      anchors.centerIn: parent
+      iconHeight: 12
+      color: button.active && button.useActiveColor ? button.activeColor : root.barIconColor
+      opacity: root.isOnline ? 1.0 : 0.6
+    }
 
-        PjeIcon {
-          anchors.centerIn: parent
-          iconSize: Style.space(11)
-          color: button.active && button.useActiveColor ? button.activeColor : root.barIconColor
-          badgeColor: root.urgent
-          crossed: !root.isOnline
-          warning: root.isOnline && !root.hasToken
-        }
-      }
+    Rectangle {
+      width: 4
+      height: 4
+      radius: 2
+      anchors.right: parent.right
+      anchors.rightMargin: 1
+      anchors.bottom: parent.bottom
+      anchors.bottomMargin: 2
+      color: root.isOnline ? (root.hasToken ? "#2ecc71" : "#f39c12") : "#e74c3c"
     }
   }
 
