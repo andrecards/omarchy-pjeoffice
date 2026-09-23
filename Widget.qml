@@ -218,6 +218,10 @@ BarWidget {
     }
   }
 
+  readonly property color barForeground: bar ? bar.barForeground : Color.foreground
+  readonly property color urgent: bar ? bar.urgent : Color.urgent
+  readonly property color barIconColor: root.isOnline ? barForeground : Qt.darker(barForeground, 1.55)
+
   BarIconButton {
     id: button
     anchors.fill: parent
@@ -236,22 +240,11 @@ BarWidget {
 
         PjeIcon {
           anchors.centerIn: parent
-          bar: root.bar
-          iconSize: Style.bar.iconCanvas
-          color: button.active && button.useActiveColor ? button.activeColor : button.foreground
-        }
-
-        Rectangle {
-          width: 5
-          height: 5
-          radius: 2.5
-          anchors.right: parent.right
-          anchors.rightMargin: 0
-          anchors.bottom: parent.bottom
-          anchors.bottomMargin: 0
-          color: root.isOnline ? (root.hasToken ? "#2ecc71" : "#f39c12") : "#e74c3c"
-          border.width: 1
-          border.color: "#000000"
+          iconSize: Style.space(11)
+          color: button.active && button.useActiveColor ? button.activeColor : root.barIconColor
+          badgeColor: root.urgent
+          crossed: !root.isOnline
+          warning: root.isOnline && !root.hasToken
         }
       }
     }
