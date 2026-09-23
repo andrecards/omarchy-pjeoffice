@@ -41,6 +41,20 @@ omarchy plugin add https://github.com/andrecards/omarchy-pjeoffice.git --enable
 > Você pode usá-lo na barra principal ou simplesmente arrastá-lo (drag & drop) para dentro da gaveta retrátil do **Tray** (`io.github.tyrichards.tray`), atrás da setinha `<`.
 > Ou se preferir via arquivo, adicione `"id": "io.github.andrecards.pjeoffice"` dentro do array `widgets` do tray em `~/.config/omarchy/shell.json`.
 
+### 🔄 Atualização
+
+O plugin **não atualiza automaticamente**. Quando houver nova versão no GitHub, quem já instalou precisa puxar manualmente:
+
+```bash
+# Atualizar apenas o PJeOffice
+omarchy plugin update io.github.andrecards.pjeoffice --yes
+
+# Ou atualizar todos os plugins instalados
+omarchy plugin update --yes
+```
+
+> Dica: após atualizar, o `omarchy-shell` recarrega automaticamente (`rescanPlugins`). Não é necessário reiniciar o sistema.
+
 ### 🗑️ Remoção
 
 ```bash
@@ -80,6 +94,20 @@ omarchy plugin add https://github.com/andrecards/omarchy-pjeoffice.git --enable
 > **Tray Drawer Hosting (Background Drawer):**
 > You can place it on the main bar or drag and drop it into the collapsible **Tray** drawer (`io.github.tyrichards.tray`) behind the chevron `<`.
 > Alternatively, add `"id": "io.github.andrecards.pjeoffice"` to the `widgets` list of the tray in `~/.config/omarchy/shell.json`.
+
+### 🔄 Updating
+
+This plugin **does not auto-update**. When a new version is pushed to GitHub, run:
+
+```bash
+# Update only PJeOffice
+omarchy plugin update io.github.andrecards.pjeoffice --yes
+
+# Or update all installed plugins
+omarchy plugin update --yes
+```
+
+> The shell reloads automatically after update (`rescanPlugins`). No reboot required.
 
 ### 🗑️ Uninstallation
 
