@@ -41,9 +41,9 @@ BarWidget {
     return out
   }
 
-  visible: true
-  implicitWidth: button.implicitWidth
-  implicitHeight: button.implicitHeight
+  visible: root.isOnline
+  implicitWidth: root.isOnline ? button.implicitWidth : 0
+  implicitHeight: root.isOnline ? button.implicitHeight : 0
 
   function close() {
     popupOpen = false
@@ -185,24 +185,12 @@ BarWidget {
     }
   }
 
-  function launchPje() {
-    if (root.bar) {
-      root.bar.run("which pjeoffice-pro >/dev/null 2>&1 && pjeoffice-pro || [ -f \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\" ] && \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\"")
-    }
-  }
-
   function quitPje() {
     if (root.bar) {
       root.bar.run("pkill -9 -f 'pjeoffice-pro.jar'")
     }
     root.isOnline = false
     root.popupOpen = false
-  }
-
-  function restartPje() {
-    if (root.bar) {
-      root.bar.run("pkill -f 'pjeoffice-pro.jar' 2>/dev/null; sleep 1; (which pjeoffice-pro >/dev/null 2>&1 && pjeoffice-pro || [ -f \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\" ] && \"$HOME/.local/share/pjeoffice-pro/pjeoffice-pro/pjeoffice-pro.sh\")")
-    }
   }
 
   function openTokenAdmin() {
@@ -521,17 +509,12 @@ BarWidget {
 
         Button {
           Layout.fillWidth: true
-          text: root.isOnline ? "Sair" : "Iniciar PJe"
-          iconText: root.isOnline ? "󰗼" : "󰐥"
+          text: "Sair"
+          iconText: "󰗼"
           bordered: true
-          accent: root.isOnline ? Color.foreground : Color.accent
           fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
           onClicked: {
-            if (root.isOnline) {
-              root.quitPje()
-            } else {
-              root.launchPje()
-            }
+            root.quitPje()
           }
         }
       }
