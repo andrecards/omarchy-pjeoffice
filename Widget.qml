@@ -218,16 +218,10 @@ BarWidget {
     }
   }
 
-  WidgetButton {
+  BarIconButton {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: "PJe"
-    fontSize: Style.font.bodySmall
-    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-    horizontalMargin: 7
-    labelVisible: false
-    fixedWidth: pjeIcon.implicitWidth + Style.spaceReal(button.horizontalMargin * 2)
     tooltipText: root.isOnline 
       ? ("PJeOffice Pro: Online" + (root.hasToken ? " (" + root.tokenName + ")" : " (Sem Token)"))
       : "PJeOffice Pro: Parado"
@@ -236,26 +230,30 @@ BarWidget {
       root.popupOpen = !root.popupOpen
     }
 
-    PjeIcon {
-      id: pjeIcon
-      anchors.centerIn: parent
-      bar: root.bar
-      iconHeight: Math.min(13, Style.bar.iconCanvas - 2)
-      pjColor: button.active && button.useActiveColor ? button.activeColor : button.foreground
-      eColor: Color.accent
-    }
+    iconComponent: Component {
+      Item {
+        anchors.fill: parent
 
-    Rectangle {
-      width: 5
-      height: 5
-      radius: 2.5
-      anchors.right: parent.right
-      anchors.rightMargin: 1
-      anchors.bottom: parent.bottom
-      anchors.bottomMargin: 4
-      color: root.isOnline ? (root.hasToken ? "#2ecc71" : "#f39c12") : "#e74c3c"
-      border.width: 1
-      border.color: "#000000"
+        PjeIcon {
+          anchors.centerIn: parent
+          bar: root.bar
+          iconSize: Style.bar.iconCanvas
+          color: button.active && button.useActiveColor ? button.activeColor : button.foreground
+        }
+
+        Rectangle {
+          width: 5
+          height: 5
+          radius: 2.5
+          anchors.right: parent.right
+          anchors.rightMargin: 0
+          anchors.bottom: parent.bottom
+          anchors.bottomMargin: 0
+          color: root.isOnline ? (root.hasToken ? "#2ecc71" : "#f39c12") : "#e74c3c"
+          border.width: 1
+          border.color: "#000000"
+        }
+      }
     }
   }
 
@@ -280,14 +278,6 @@ BarWidget {
 
         RowLayout {
           width: parent.width
-          spacing: Style.space(8)
-
-          PjeIcon {
-            iconHeight: 18
-            bar: root.bar
-            pjColor: root.bar ? root.bar.foreground : Color.foreground
-            eColor: Color.accent
-          }
 
           Text {
             Layout.fillWidth: true
