@@ -56,10 +56,18 @@ BarWidget {
     }
   }
 
+  // Diretório de dados resiliente (Qt.resolvedUrl com fallback para o diretório padrão de plugins)
+  readonly property string dataDir: {
+    var raw = Qt.resolvedUrl("data").toString()
+    if (raw.indexOf("file://") === 0) return raw.substring(7)
+    var home = Quickshell.env("HOME") || "/home/admin"
+    return home + "/.config/omarchy/plugins/" + root.moduleName + "/data"
+  }
+
   // Carregamento dos dados JSON sincronizados com pje.jus.br/navegador
   FileView {
     id: estadosFile
-    path: Quickshell.pluginPath(root.moduleName) + "/data/estados.json"
+    path: root.dataDir + "/estados.json"
     watchChanges: false
     printErrors: false
     onLoaded: {
@@ -84,7 +92,7 @@ BarWidget {
 
   FileView {
     id: tribunaisFile
-    path: Quickshell.pluginPath(root.moduleName) + "/data/tribunais.json"
+    path: root.dataDir + "/tribunais.json"
     watchChanges: false
     printErrors: false
     onLoaded: {
@@ -94,6 +102,16 @@ BarWidget {
       } catch (e) {
         console.error("Erro ao carregar tribunais.json:", e)
       }
+    }
+  }
+
+  Timer {
+    interval: 1000
+    running: true
+    repeat: false
+    onTriggered: {
+      if (!root.estadosList || root.estadosList.length === 0) estadosFile.reload()
+      if (!root.tribunaisData || Object.keys(root.tribunaisData).length === 0) tribunaisFile.reload()
     }
   }
 
