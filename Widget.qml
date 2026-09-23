@@ -41,9 +41,9 @@ BarWidget {
     return out
   }
 
-  visible: root.isOnline
-  implicitWidth: root.isOnline ? button.implicitWidth : 0
-  implicitHeight: root.isOnline ? button.implicitHeight : 0
+  visible: true
+  implicitWidth: button.implicitWidth
+  implicitHeight: button.implicitHeight
 
   function close() {
     popupOpen = false
@@ -56,10 +56,18 @@ BarWidget {
     }
   }
 
+  // Diretório de dados resiliente (Qt.resolvedUrl com fallback para o diretório padrão de plugins)
+  readonly property string dataDir: {
+    var raw = Qt.resolvedUrl("data").toString()
+    if (raw.indexOf("file://") === 0) return raw.substring(7)
+    var home = Quickshell.env("HOME") || "/home/admin"
+    return home + "/.config/omarchy/plugins/" + root.moduleName + "/data"
+  }
+
   // Carregamento dos dados JSON sincronizados com pje.jus.br/navegador
   FileView {
     id: estadosFile
-    path: Quickshell.pluginPath(root.moduleName) + "/data/estados.json"
+    path: root.dataDir + "/estados.json"
     watchChanges: false
     printErrors: false
     onLoaded: {
@@ -84,7 +92,7 @@ BarWidget {
 
   FileView {
     id: tribunaisFile
-    path: Quickshell.pluginPath(root.moduleName) + "/data/tribunais.json"
+    path: root.dataDir + "/tribunais.json"
     watchChanges: false
     printErrors: false
     onLoaded: {
@@ -94,6 +102,16 @@ BarWidget {
       } catch (e) {
         console.error("Erro ao carregar tribunais.json:", e)
       }
+    }
+  }
+
+  Timer {
+    interval: 1000
+    running: true
+    repeat: false
+    onTriggered: {
+      if (!root.estadosList || root.estadosList.length === 0) estadosFile.reload()
+      if (!root.tribunaisData || Object.keys(root.tribunaisData).length === 0) tribunaisFile.reload()
     }
   }
 
@@ -204,27 +222,27 @@ BarWidget {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: "PJE"
+    text: "PJe"
     fontSize: Style.font.bodySmall
     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-    horizontalMargin: 6
+    horizontalMargin: 7
     labelVisible: false
+    fixedWidth: pjeIcon.implicitWidth + Style.spaceReal(button.horizontalMargin * 2)
     tooltipText: root.isOnline 
       ? ("PJeOffice Pro: Online" + (root.hasToken ? " (" + root.tokenName + ")" : " (Sem Token)"))
       : "PJeOffice Pro: Parado"
+    active: root.popupOpen
     onPressed: function(btn) {
       root.popupOpen = !root.popupOpen
     }
 
-    Text {
+    PjeIcon {
+      id: pjeIcon
       anchors.centerIn: parent
-      text: "PJE"
-      font.family: root.bar ? root.bar.fontFamily : Style.font.family
-      font.pixelSize: Style.font.bodySmall
-      font.bold: true
-      font.weight: Font.ExtraBold
-      color: button.active && button.useActiveColor ? button.activeColor : button.foreground
-      renderType: Text.NativeRendering
+      bar: root.bar
+      iconHeight: Math.min(13, Style.bar.iconCanvas - 2)
+      pjColor: button.active && button.useActiveColor ? button.activeColor : button.foreground
+      eColor: Color.accent
     }
 
     Rectangle {
@@ -262,6 +280,15 @@ BarWidget {
 
         RowLayout {
           width: parent.width
+          spacing: Style.space(8)
+
+          PjeIcon {
+            iconHeight: 18
+            bar: root.bar
+            pjColor: root.bar ? root.bar.foreground : Color.foreground
+            eColor: Color.accent
+          }
+
           Text {
             Layout.fillWidth: true
             textFormat: Text.PlainText
@@ -503,12 +530,17 @@ BarWidget {
 
         Button {
           Layout.fillWidth: true
-          text: "Sair"
-          iconText: "󰗼"
+          text: root.isOnline ? "Sair" : "Iniciar PJe"
+          iconText: root.isOnline ? "󰗼" : "󰐥"
           bordered: true
+          accent: root.isOnline ? Color.foreground : Color.accent
           fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
           onClicked: {
-            root.quitPje()
+            if (root.isOnline) {
+              root.quitPje()
+            } else {
+              root.launchPje()
+            }
           }
         }
       }
