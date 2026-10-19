@@ -229,7 +229,7 @@ BarWidget {
     PjeIcon {
       id: pjeIcon
       anchors.centerIn: parent
-      iconHeight: 12
+      iconHeight: 9
       color: button.active && button.useActiveColor ? button.activeColor : root.barIconColor
       opacity: root.isOnline ? 1.0 : 0.6
     }
