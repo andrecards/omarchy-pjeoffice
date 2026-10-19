@@ -3,11 +3,11 @@ import QtQuick.Shapes
 import qs.Commons
 
 // PjeIcon.qml — Símbolo vetorial oficial do PJe perfeitamente proporcionado ao padrão dos ícones da barra Omarchy
-// Altura óptica de 12px (idêntica ao Wi-Fi, som e medidores), proporção 1.78:1 (21x12px), 100% monocromático.
+// Altura óptica de 9px (harmonizada com os ícones vizinhos), proporção 1.78:1 (16x9px), 100% monocromático.
 Item {
   id: root
 
-  property real iconHeight: 12
+  property real iconHeight: 9
   property real iconWidth: Math.round(iconHeight * (74.96 / 42.1))
   property color color: Color.foreground
 
