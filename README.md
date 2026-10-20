@@ -77,6 +77,7 @@ Status bar widget and background manager for **PJeOffice Pro**, cryptographic A3
 - **A3 Cryptographic Token Detection:** Tracks USB smart cards and digital certificate tokens using `opensc-tool`.
 - **National Courts Directory (PJe Brasil):** Real-time search and state (UF) filtering for Brazilian state and federal courts (TJ, TRF, TRT).
 - **Lifecycle Management:** One-click shortcuts to launch **TokenAdmin** or securely **Quit** the backend service.
+- **Resident Window Control:** Detects the PJeOffice Java window and moves it automatically to the hidden `special:pje` workspace. The widget uses one compact toggle button that alternates between **Exibir PJe** and **Ocultar PJe**, preserves the original workspace, and keeps **Sair** for graceful shutdown.
 - **Smart Space Reservation:** Hides itself when offline so it doesn't take up bar or drawer space.
 
 ### 📋 Prerequisites
@@ -120,3 +121,5 @@ omarchy plugin remove io.github.andrecards.pjeoffice --yes
 ## License
 
 Distributed under the [MIT](LICENSE) License.
+
+- **Ícone PJE:** texto em negrito, sem círculo nem ponto de status; a cor acompanha a paleta ativa da barra.

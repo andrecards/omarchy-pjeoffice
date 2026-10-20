@@ -14,6 +14,11 @@ BarWidget {
   property bool hasToken: false
   property string tokenName: ""
   property bool popupOpen: false
+  property string windowState: "ausente"
+  readonly property string windowControlScript: {
+    var home = Quickshell.env("HOME") || "/home/admin"
+    return home + "/.config/omarchy/plugins/io.github.andrecards.pjeoffice/pje-window-control.sh"
+  }
 
   // Dados dos Tribunais e Estados carregados do PJe Navegador
   property var estadosList: []
@@ -145,6 +150,19 @@ BarWidget {
   }
 
   Process {
+    id: windowProc
+    command: [root.windowControlScript, "auto-hide"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var nextState = text.trim()
+        if (nextState.length > 0) root.windowState = nextState
+      }
+    }
+    stderr: StdioCollector { waitForEnd: true }
+  }
+
+  Process {
     id: tokenProc
     command: ["opensc-tool", "-l"]
     stdout: StdioCollector {
@@ -175,22 +193,49 @@ BarWidget {
   // Timer sempre ativo para detectar o estado tanto na inicialização
   // quanto durante o uso. Polling de 3 s garante responsividade sem overhead.
   Timer {
-    interval: 3000
+    interval: 2000
     running: true
     repeat: true
     triggeredOnStart: true
     onTriggered: {
       if (!statusProc.running) statusProc.running = true
       if (!tokenProc.running) tokenProc.running = true
+      if (root.isOnline && !windowProc.running) windowProc.running = true
     }
   }
 
-  function quitPje() {
-    if (root.bar) {
-      root.bar.run("pkill -9 -f 'pjeoffice-pro.jar'")
+  Process {
+    id: minimizeProc
+    command: [root.windowControlScript, "minimize"]
+    onExited: { if (!windowProc.running) windowProc.running = true }
+  }
+
+  Process {
+    id: restoreProc
+    command: [root.windowControlScript, "restore"]
+    onExited: { if (!windowProc.running) windowProc.running = true }
+  }
+
+  Process {
+    id: quitProc
+    command: [root.windowControlScript, "quit"]
+    onExited: {
+      root.isOnline = false
+      root.windowState = "encerrado"
+      root.popupOpen = false
     }
-    root.isOnline = false
-    root.popupOpen = false
+  }
+
+  function minimizePje() {
+    if (!minimizeProc.running) minimizeProc.running = true
+  }
+
+  function restorePje() {
+    if (!restoreProc.running) restoreProc.running = true
+  }
+
+  function quitPje() {
+    if (!quitProc.running) quitProc.running = true
   }
 
   function openTokenAdmin() {
@@ -209,12 +254,13 @@ BarWidget {
   readonly property color barForeground: bar ? bar.barForeground : Color.foreground
   readonly property color urgent: bar ? bar.urgent : Color.urgent
   readonly property color barIconColor: root.isOnline ? barForeground : Qt.darker(barForeground, 1.55)
+  readonly property color statusColor: root.windowState === "minimizado" ? "#7dd3fc" : (root.windowState === "visivel" ? "#86efac" : "#fca5a5")
 
   WidgetButton {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: "PJe"
+    text: "PJE"
     labelVisible: false
     horizontalMargin: 3
     fixedWidth: pjeIcon.implicitWidth + Style.spaceReal(button.horizontalMargin * 2)
@@ -229,20 +275,10 @@ BarWidget {
     PjeIcon {
       id: pjeIcon
       anchors.centerIn: parent
-      iconHeight: 9
-      color: button.active && button.useActiveColor ? button.activeColor : root.barIconColor
-      opacity: root.isOnline ? 1.0 : 0.6
-    }
-
-    Rectangle {
-      width: 4
-      height: 4
-      radius: 2
-      anchors.right: parent.right
-      anchors.rightMargin: 1
-      anchors.bottom: parent.bottom
-      anchors.bottomMargin: 2
-      color: root.isOnline ? (root.hasToken ? "#2ecc71" : "#f39c12") : "#e74c3c"
+      foreground: button.bar ? button.bar.barForeground : button.foreground
+      fontFamily: button.fontFamily
+      // Mantém a altura discreta dos ícones vizinhos e respeita o espaço disponível.
+      iconHeight: Math.max(0, Math.min(Style.spaceReal(12), button.height - Style.spaceReal(2)))
     }
   }
 
@@ -280,8 +316,8 @@ BarWidget {
 
           Text {
             textFormat: Text.PlainText
-            text: root.isOnline ? "● ONLINE" : "● OFFLINE"
-            color: root.isOnline ? "#2ecc71" : "#e74c3c"
+          text: root.isOnline ? "ATIVO" : "PARADO"
+          color: root.isOnline ? "#86efac" : "#fca5a5"
             font.family: root.bar ? root.bar.fontFamily : Style.font.family
             font.pixelSize: Style.font.caption
             font.bold: true
@@ -290,8 +326,8 @@ BarWidget {
 
         Text {
           textFormat: Text.PlainText
-          text: root.isOnline ? (root.hasToken ? "AUTENTICADOR ATIVO COM TOKEN" : "AUTENTICADOR ATIVO SEM TOKEN") : "AUTENTICADOR DESCONECTADO"
-          color: root.isOnline ? (root.hasToken ? "#2ecc71" : "#f39c12") : "#e74c3c"
+          text: root.isOnline ? (root.hasToken ? "SERVIÇO ATIVO · TOKEN CONECTADO" : "SERVIÇO ATIVO · SEM TOKEN") : "SERVIÇO DESCONECTADO"
+          color: root.isOnline ? (root.hasToken ? "#86efac" : "#facc15") : "#fca5a5"
           font.family: root.bar ? root.bar.fontFamily : Style.font.family
           font.pixelSize: Style.font.caption
           font.bold: true
@@ -318,6 +354,29 @@ BarWidget {
           font.pixelSize: Style.font.caption
           color: root.bar ? root.bar.foreground : Color.foreground
           elide: Text.ElideRight
+        }
+      }
+
+      PanelSeparator {
+        width: parent.width
+      }
+
+      Column {
+        width: parent.width
+        spacing: 0
+
+        Button {
+          width: parent.width
+          height: Style.space(28)
+          text: root.windowState === "minimizado" ? "Exibir PJe" : "Ocultar PJe"
+          bordered: true
+          accent: root.windowState === "minimizado" ? Color.accent : root.statusColor
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          enabled: root.isOnline
+          onClicked: {
+            if (root.windowState === "minimizado") root.restorePje()
+            else root.minimizePje()
+          }
         }
       }
 
