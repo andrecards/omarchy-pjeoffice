@@ -14,6 +14,7 @@ BarWidget {
   property bool hasToken: false
   property string tokenName: ""
   property bool popupOpen: false
+  property bool popupWasOpen: false
   property string windowState: "ausente"
   readonly property string windowControlScript: {
     var home = Quickshell.env("HOME") || "/home/admin"
@@ -290,6 +291,12 @@ BarWidget {
     open: root.popupOpen
     contentWidth: popup.fittedContentWidth(Style.space(340))
     contentHeight: popup.fittedContentHeight(cardCol.implicitHeight)
+    onOpenChanged: {
+      if (!open && root.popupWasOpen && root.isOnline) {
+        Qt.callLater(function() { root.minimizePje() })
+      }
+      root.popupWasOpen = open
+    }
 
     Column {
       id: cardCol
